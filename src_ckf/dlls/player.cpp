@@ -379,7 +379,7 @@ float GetClassMaxSpeed(int iClass)
 	case CLASS_MEDIC: return 267.5;
 	case CLASS_ENGINEER: return 250;
 	case CLASS_DEMOMAN: return 232.5;
-	case CLASS_SPY: return 250;
+	case CLASS_SPY: return 267.5;
 	}
 	return 250;
 }

@@ -440,6 +440,7 @@ void GameDLLInit(void)
 		//Do remaining logic at least one frame later to avoid race conditions.
 	});
 
+
 	CVAR_REGISTER(&displaysoundlist);
 
 	CVAR_REGISTER(&timelimit);

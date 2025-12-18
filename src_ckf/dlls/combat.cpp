@@ -1148,11 +1148,11 @@ void CBaseMonster::TraceAttack(entvars_t *pevAttacker, float flDamage, Vector ve
 		case HITGROUP_GENERIC: break;
 		case HITGROUP_HEAD: flDamage *= 3; break;
 		case HITGROUP_CHEST:
-		case HITGROUP_STOMACH: flDamage *= 1.5; break;
+		case HITGROUP_STOMACH: flDamage *= 1.0; break;
 		case HITGROUP_LEFTARM:
 		case HITGROUP_RIGHTARM: flDamage *= 1.0; break;
 		case HITGROUP_LEFTLEG:
-		case HITGROUP_RIGHTLEG: flDamage *= 0.75; break;
+		case HITGROUP_RIGHTLEG: flDamage *= 1.0; break;
 		default: break;
 	}
 

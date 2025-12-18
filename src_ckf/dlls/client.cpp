@@ -1936,9 +1936,12 @@ void StartFrame(void)
 
 	g_LastBotUpdateTime = gpGlobals->time;
 	
-	int i = 0;
-	for (i = 0; i <= gpGlobals->maxClients; ++i)
+	for (int i = 0; i <= gpGlobals->maxClients; i++)
 	{
+		// for some reason, bots will only work if they are the first person to join a team
+		// this points to something with the player variable below
+		// idk though...
+		// i should look around for help
 		auto player = static_cast<CBasePlayer*>(UTIL_PlayerByIndex(i));
 
 		if (!player)
