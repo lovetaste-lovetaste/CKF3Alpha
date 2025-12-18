@@ -1923,7 +1923,11 @@ void StartFrame(void)
 		g_iSkillLevel = 0;
 
 	g_ulFrameCount++;
+	BotThink();
+}
 
+void BotThink(void)
+{
 	// Handle level changes and other problematic time changes.
 	float frametime = gpGlobals->time - g_LastBotUpdateTime;
 
@@ -1935,7 +1939,7 @@ void StartFrame(void)
 	const byte msec = byte(frametime * 1000);
 
 	g_LastBotUpdateTime = gpGlobals->time;
-	
+
 	for (int i = 0; i <= gpGlobals->maxClients; i++)
 	{
 		// for some reason, bots will only work if they are the first person to join a team
@@ -1977,15 +1981,15 @@ void StartFrame(void)
 		{
 			HandleMenu_ChooseClass(player, RANDOM_LONG(1, 9));
 		}
-		
+
 		PlayerPreThink(player->edict());
 		PlayerPostThink(player->edict());
 
 		float vel[3] = { 0 }; // assign all items with 0
-		//for (int i = 0; i < 3; ++i) {
-			//vel[i] = player->pev->velocity[i];
-		//}
-		//player->entindex();
+							  //for (int i = 0; i < 3; ++i) {
+							  //vel[i] = player->pev->velocity[i];
+							  //}
+							  //player->entindex();
 		g_engfuncs.pfnRunPlayerMove(player->edict(), player->pev->angles, vel[0], vel[1], vel[2], player->pev->button, player->pev->impulse, msec);
 	}
 }
