@@ -1,0 +1,9 @@
+﻿  CSBTE.vcxproj -> C:\Users\wen\source\repos\CKF3Alpha\src\Release\CSBTE.dll
+  CSBTE.vcxproj -> Release\CSBTE.pdb (Full PDB)
+          1 file(s) copied.
+  The system cannot find the path specified.
+          0 file(s) copied.
+C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.CppCommon.targets(133,5): error MSB3073: The command "copy "Release\CSBTE.dll" "..\Test\ckf3\MetaHook\CSBTE.dll"
+C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.CppCommon.targets(133,5): error MSB3073: copy "Release\CSBTE.dll" "F:\Steam\steamapps\common\Half-Life\ckf3\MetaHook\CSBTE.dll"
+C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.CppCommon.targets(133,5): error MSB3073: 
+C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.CppCommon.targets(133,5): error MSB3073: :VCEnd" exited with code 1.

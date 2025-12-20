@@ -265,6 +265,33 @@ float UTIL_AngleDiff(float destAngle, float srcAngle)
 	return delta;
 }
 
+void UTIL_FixFloatAngle(float* fAngle)
+{
+	// safety
+
+	short int iLoops = 0;
+
+	if (*fAngle < -180)
+	{
+		while (iLoops < 4 && *fAngle < -180)
+		{
+			*fAngle += 360.0f;
+			iLoops++;
+		}
+	}
+	else if (*fAngle > 180)
+	{
+		while (iLoops < 4 && *fAngle > 180)
+		{
+			*fAngle -= 360.0f;
+			iLoops++;
+		}
+	}
+
+	if (iLoops >= 4)
+		*fAngle = 0; // reset
+}
+
 Vector UTIL_VecToAngles(const Vector &vec)
 {
 	float rgflVecOut[3];

@@ -74,6 +74,7 @@ void ClientDisconnect(edict_t *pEntity)
 
 	UTIL_SetOrigin(&pEntity->v, pEntity->v.origin);
 	g_pGameRules->ClientDisconnected(pEntity);
+
 	auto pPlayer = reinterpret_cast<CBasePlayer*>(GET_PRIVATE(pEntity));
 
 	if (pPlayer)
@@ -1900,7 +1901,7 @@ void ParmsChangeLevel(void)
 		pSaveData->connectionCount = BuildChangeList(pSaveData->levelList, MAX_LEVEL_CONNECTIONS);
 }
 
-static float g_LastBotUpdateTime = 0;
+float g_LastBotUpdateTime[40];
 
 void StartFrame(void)
 {
@@ -1928,25 +1929,27 @@ void StartFrame(void)
 
 void BotThink(void)
 {
-	// Handle level changes and other problematic time changes.
-	float frametime = gpGlobals->time - g_LastBotUpdateTime;
-
-	if (frametime > 0.25f || frametime < 0)
+	int i = 1;
+	while ( i <= gpGlobals->maxClients )
 	{
-		frametime = 0;
-	}
 
-	const byte msec = byte(frametime * 1000);
-
-	g_LastBotUpdateTime = gpGlobals->time;
-
-	for (int i = 0; i <= gpGlobals->maxClients; i++)
-	{
+		// Handle level changes and other problematic time changes.
+		float frametime = gpGlobals->time - g_LastBotUpdateTime[i];
+		if (frametime > 0.25f || frametime < 0)
+		{
+			frametime = 0;
+		}
+		byte msec = byte(frametime * 1000);
+		g_LastBotUpdateTime[i] = gpGlobals->time;
+		
 		// for some reason, bots will only work if they are the first person to join a team
 		// this points to something with the player variable below
 		// idk though...
 		// i should look around for help
+
 		auto player = static_cast<CBasePlayer*>(UTIL_PlayerByIndex(i));
+
+		i = i + 1;
 
 		if (!player)
 		{
@@ -1958,41 +1961,151 @@ void BotThink(void)
 			continue;
 		}
 
-		if ((player->pev->flags & FL_FAKECLIENT) == 0)
+		if ( true )
 		{
-			continue;
+			//Run bot think here.
+
+			if ((player->pev->flags & FL_FAKECLIENT) == 1)
+			{
+				g_engfuncs.pfnServerPrint("\nBot thinking\n");
+			}
+
+			// g_engfuncs.pfnServerPrint("bot think " + i);
+
+			if (player->m_iTeam != TEAM_BLU && player->m_iTeam != TEAM_RED)
+			{
+				HandleMenu_ChooseTeam(player, 0);
+				// g_engfuncs.pfnServerPrint("Bot is trying to pick a team\n");
+				// if not on a team, bots automatically pick the team
+			}
+			if ( !(CLASS_SPY >= player->m_iClass && player->m_iClass >= CLASS_SCOUT) )
+			{
+				HandleMenu_ChooseClass(player, 0);
+				//g_engfuncs.pfnServerPrint("Bot is trying to pick a class\n");
+			}
+			player->PreThink();
+			player->PostThink();
+
+			float vel[3] = { 0 };
+			g_engfuncs.pfnRunPlayerMove(player->edict(), player->pev->angles, vel[0], vel[1], vel[2], player->pev->button, player->pev->impulse, msec);
+			// (edict_t *fakeclient, const float *viewangles, float forwardmove, float sidemove, float upmove, unsigned short buttons, byte impulse, byte msec )
+
+
+			//continue;
 		}
-
-		if (player->m_iTeam == TEAM_UNASSIGNED)
-		{
-			player->m_iTeam == TEAM_SPECTATOR;
-		}
-
-		//If bot is newly created finish setup here.
-
-		//Run bot think here.
-
-		if (player->m_iTeam != TEAM_BLU && player->m_iTeam != TEAM_RED)
-		{
-			HandleMenu_ChooseTeam(player, 0);
-			// if not on a team, bots automatically pick the team 
-		}
-		if (!(player->m_iClass <= CLASS_SPY && player->m_iClass >= CLASS_SCOUT))
-		{
-			HandleMenu_ChooseClass(player, RANDOM_LONG(1, 9));
-		}
-
-		PlayerPreThink(player->edict());
-		PlayerPostThink(player->edict());
-
-		float vel[3] = { 0 }; // assign all items with 0
-							  //for (int i = 0; i < 3; ++i) {
-							  //vel[i] = player->pev->velocity[i];
-							  //}
-							  //player->entindex();
-		g_engfuncs.pfnRunPlayerMove(player->edict(), player->pev->angles, vel[0], vel[1], vel[2], player->pev->button, player->pev->impulse, msec);
 	}
 }
+
+// converted from tf2ebots
+// 
+void TF2_LookAtPos(int client, float flGoal[3], float flAimSpeed = 0.05)
+{
+	auto player = static_cast<CBasePlayer*>(UTIL_PlayerByIndex(client));
+
+	if (!player)
+	{
+		return;
+	}
+
+
+	Vector flPos = player->pev->view_ofs;
+	Vector flAng = player->pev->angles;
+
+	// get normalised direction from target to client
+	Vector desired_dir;
+	desired_dir[0] = flGoal[0] - flPos[0];
+	desired_dir[1] = flGoal[1] - flPos[1];
+	desired_dir[2] = flGoal[2] - flPos[2];
+
+	desired_dir = UTIL_VecToAngles(desired_dir);
+
+	// ease the current direction to the target direction
+	flAng[0] += AngleNormalize(desired_dir[0] - flAng[0]) * flAimSpeed;
+	flAng[1] += AngleNormalize(desired_dir[1] - flAng[1]) * flAimSpeed;
+
+	player->pev->angles = flAng;
+	
+	// TeleportEntity(client, NULL_VECTOR, flAng, NULL_VECTOR);
+}
+
+float AngleNormalize(float angle)
+{
+	angle = fmodf(angle, 360.0);
+	if (angle > 180)
+	{
+		angle -= 360;
+	}
+	if (angle < -180)
+	{
+		angle += 360;
+	}
+
+	return angle;
+}
+
+
+// this is from HPB_Bot but i didnt use it lolz
+
+// void BotFunc_ChangeAngles(float* fSpeed, const float* fIdeal, float* fCurrent, float* fUpdate)
+// {
+// float fCurrent180;  // current +/- 180 degrees
+
+//		turn from the current v_angle yaw to the ideal_yaw by selecting
+//			the quickest way to turn to face that direction
+
+//find the difference in the current and ideal angle
+// const float fDiff = std::fabs(*fCurrent - *fIdeal);
+
+//check if the bot is already facing the ideal_yaw direction...
+// if (fDiff <= 0.1f)
+// {
+// *fSpeed = fDiff;
+
+// return;
+// }
+
+//check if difference is less than the max degrees per turn
+// *fSpeed = (((fDiff) < (*fSpeed)) ? (fDiff) : (*fSpeed)); // just need to turn a little bit (less than max)
+//								here we have four cases, both angle positive, one positive and
+//							the other negative, one negative and the other positive, or
+//						both negative.  handle each case separately...
+
+// if (*fCurrent >= 0 && *fIdeal >= 0)  // both positive
+// {
+// if (*fCurrent > *fIdeal)
+// *fCurrent -= *fSpeed;
+// else
+// *fCurrent += *fSpeed;
+// }
+// else if (*fCurrent >= 0 && *fIdeal < 0)
+// {
+// fCurrent180 = *fCurrent - 180;
+
+// if (fCurrent180 > *fIdeal)
+// *fCurrent += *fSpeed;
+// else
+// *fCurrent -= *fSpeed;
+// }
+// else if (*fCurrent < 0 && *fIdeal >= 0)
+// {
+// fCurrent180 = *fCurrent + 180;
+// if (fCurrent180 > *fIdeal)
+// *fCurrent += *fSpeed;
+// else
+// *fCurrent -= *fSpeed;
+// }
+// else  // (current < 0) && (ideal < 0)  both negative
+// {
+// if (*fCurrent > *fIdeal)
+// *fCurrent -= *fSpeed;
+// else
+// *fCurrent += *fSpeed;
+// }
+
+// UTIL_FixFloatAngle(fCurrent);
+
+// *fUpdate = *fCurrent;
+// }
 
 unsigned short m_usResetDecals;
 

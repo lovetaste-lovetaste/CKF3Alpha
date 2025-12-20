@@ -12,6 +12,8 @@ extern void ServerActivate(edict_t *pEdictList, int edictCount, int clientMax);
 extern void ServerDeactivate(void);
 extern void StartFrame(void);
 extern void BotThink(void);
+void TF2_LookAtPos(int client, float flGoal[3], float flAimSpeed);
+float AngleNormalize(float angle);
 extern void PlayerPostThink(edict_t *pEntity);
 extern void PlayerPreThink(edict_t *pEntity);
 extern void ParmsNewLevel(void);
