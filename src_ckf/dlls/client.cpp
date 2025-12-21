@@ -1965,7 +1965,7 @@ void BotThink(void)
 		{
 			//Run bot think here.
 
-			if ((player->pev->flags & FL_FAKECLIENT) == 1)
+			if ((player->pev->flags & FL_FAKECLIENT) == 1) // for some reason bots spawned with sv_addbot do not have the flag set
 			{
 				g_engfuncs.pfnServerPrint("\nBot thinking\n");
 			}
